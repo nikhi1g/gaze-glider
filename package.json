@@ -1,0 +1,94 @@
+{
+  "name": "gaze-glider",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Private, local webcam gaze tracking and optional cursor control for macOS Apple Silicon.",
+  "license": "MIT",
+  "author": "Nikhil Gupta",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nikhi1g/gaze-glider.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nikhi1g/gaze-glider/issues"
+  },
+  "homepage": "https://github.com/nikhi1g/gaze-glider#readme",
+  "type": "module",
+  "main": "electron/main.cjs",
+  "engines": {
+    "node": ">=22.12.0",
+    "npm": ">=10"
+  },
+  "scripts": {
+    "assets": "node scripts/prepare-assets.mjs",
+    "setup": "node scripts/setup.mjs",
+    "models": "node scripts/fetch-webeyetrack-models.mjs",
+    "native:build": "bash scripts/build-native-helper.sh",
+    "dev:web": "vite",
+    "electron:dev": "electron electron/main.cjs",
+    "dev": "node scripts/dev.mjs",
+    "build:web": "vite build",
+    "build": "npm run assets && npm run build:web && npm run native:build",
+    "start": "electron electron/main.cjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json --noEmit",
+    "test": "vitest run",
+    "check": "npm run typecheck && npm test && node --check electron/main.cjs && node --check electron/preload.cjs",
+    "package:mac": "npm run build && electron-builder --mac dir --arm64",
+    "dist:mac": "npm run build && electron-builder --mac dmg zip --arm64"
+  },
+  "dependencies": {
+    "@mediapipe/tasks-vision": "0.10.18",
+    "webeyetrack": "0.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "26.2.0",
+    "electron": "43.4.0",
+    "electron-builder": "26.15.3",
+    "typescript": "5.8.3",
+    "vite": "8.2.1",
+    "vitest": "4.1.10"
+  },
+  "build": {
+    "appId": "io.gazeglider.app",
+    "productName": "GazeGlider",
+    "artifactName": "GazeGlider-${version}-${arch}.${ext}",
+    "asar": true,
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "native/build/GazeCursorHelper",
+        "to": "bin/GazeCursorHelper"
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ],
+      "identity": null,
+      "hardenedRuntime": false,
+      "extendInfo": {
+        "NSCameraUsageDescription": "GazeGlider uses the camera only for on-device eye and head tracking. Video is not uploaded."
+      },
+      "minimumSystemVersion": "14.0"
+    },
+    "directories": {
+      "output": "release"
+    }
+  }
+}
